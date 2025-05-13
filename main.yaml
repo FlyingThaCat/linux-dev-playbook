@@ -51,3 +51,6 @@
 
     - name: Install VSCode
       include_tasks: tasks/vscode.yml
+    
+    - name: Install keyd
+      include_tasks: tasks/keyd.yml

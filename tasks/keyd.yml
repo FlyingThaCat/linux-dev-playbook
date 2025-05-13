@@ -1,7 +1,7 @@
 - name: Clone keyd repository
   ansible.builtin.git:
     repo: https://github.com/rvaiya/keyd
-    dest: /home/john/Developer/keyd
+    dest: /tmp/keyd
     version: {{ keyd_version}}
 
 - name: Install Build Dependencies
@@ -16,14 +16,14 @@
 - name: Build keyd
   shell:
     cmd: |
-      cd /home/john/Developer/keyd
+      cd /tmp/keyd
       make
 
 - name: Install keyd
   become: true
   shell:
     cmd: |
-      cd /home/john/Developer/keyd
+      cd /tmp/keyd
       make install
   args:
     executable: /bin/bash
@@ -46,7 +46,7 @@
     mode: '0644'
   when: ansible_os_family == "Debian"
 
-- name: reload keyd
+- name: Reload keyd
   become: true
   shell:
     cmd: |
@@ -55,4 +55,11 @@
 
 - debug:
     msg: "if it is not working, try to remap the keyd.conf file to /etc/keyd/default.conf and do sudo keyd reload"
+  when: ansible_os_family == "Debian"
+
+- name: Clean Up 
+  become: true
+  file:
+    path: /tmp/keyd
+    state: absent
   when: ansible_os_family == "Debian"
