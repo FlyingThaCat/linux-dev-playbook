@@ -1,0 +1,19 @@
+- name: Download Visual Studio Code .deb package
+  get_url:
+    url: https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
+    dest: /tmp/vscode.deb
+    mode: '0644'
+  when: ansible_os_family == "Debian"
+  
+- name: Install Visual Studio Code from .deb package
+  become: true
+  apt:
+    deb: /tmp/vscode.deb
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Remove Visual Studio Code .deb package
+  file:
+    path: /tmp/vscode.deb
+    state: absent
+  when: ansible_os_family == "Debian"

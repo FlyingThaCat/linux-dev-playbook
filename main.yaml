@@ -1,0 +1,53 @@
+---
+- name: Configure host
+  hosts: all
+  connection: local
+  vars:
+    go_version: "1.24.3"
+
+  tasks:
+    - name: Update apt cache
+      become: true
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+        
+    - name: Install basic tools
+      become: true
+      package:
+        name:
+          - sudo
+          - git
+          - curl
+          - wget
+          - htop
+          - mpv
+          - vlc
+        state: present
+    
+    - name: Install bun
+      include_tasks: tasks/bun.yml
+
+    - name: Install cloudflare-warp
+      include_tasks: tasks/cloudflare-warp.yml
+    
+    - name: Install deno
+      include_tasks: tasks/deno.yml
+
+    - name: Make Developer Folder
+      include_tasks: tasks/developer-folder.yml
+
+    - name: Install Docker Engine
+      include_tasks: tasks/docker-engine.yml
+
+    - name: Install Go
+      include_tasks: tasks/go.yml
+
+    - name: Install Google Chrome
+      include_tasks: tasks/google-chrome.yml
+
+    - name: Install NVM
+      include_tasks: tasks/nvm.yml
+
+    - name: Install VSCode
+      include_tasks: tasks/vscode.yml

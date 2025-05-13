@@ -1,0 +1,103 @@
+- name: Remove old Docker stuff (Debian)
+  apt:
+    name:
+      - docker.io
+      - docker-doc
+      - docker-compose
+      - podman-docker
+      - containerd
+      - runc
+    state: absent
+  when: ansible_os_family == "Debian" and ansible_distribution == "Debian"
+
+- name: Remove old Docker stuff (Ubuntu)
+  apt:
+    name:
+      - docker.io
+      - docker-doc
+      - docker-compose
+      - podman-docker
+      - containerd
+      - runc
+      - docker-compose-v2
+    state: absent
+  when: ansible_os_family == "Debian" and ansible_distribution == "Ubuntu"
+
+- name: Update apt cache
+  become: true
+  apt:
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install prerequisites
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+      - lsb-release
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Add Docker GPG key (Debian)
+  become: true
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
+  when: ansible_os_family == "Debian" and ansible_distribution == "Debian"
+
+- name: Add Docker GPG key (Ubuntu)
+  become: true
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: present
+  when: ansible_os_family == "Debian" and ansible_distribution == "Ubuntu"
+
+- name: Add Docker repository (Debian)
+  become: true
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/debian {{ ansible_distribution_release | lower }} stable"
+    state: present
+    filename: docker
+  when: ansible_os_family == "Debian" and ansible_distribution == "Debian"
+
+- name: Add Docker repository (Ubuntu)
+  become: true
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release | lower }} stable"
+    state: present
+    filename: docker
+  when: ansible_os_family == "Debian" and ansible_distribution == "Ubuntu"
+
+- name: Update apt cache after adding repo
+  become: true
+  apt:
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install Docker Engine
+  become: true
+  apt:
+    name: 
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Add user to docker group
+  user:
+    name: "{{ ansible_user_id }}"
+    group: docker
+    append: yes
+  when: ansible_os_family == "Debian"
+
+- name: Ensure Docker service is started and enabled
+  become: true
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  when: ansible_os_family == "Debian"

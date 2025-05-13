@@ -1,0 +1,26 @@
+- name: install Prequisites
+  become: true
+  apt:
+    name:
+      - curl
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install Deno
+  shell: curl -fsSL https://deno.land/install.sh | sh
+  args:
+    executable: /bin/bash
+  when: ansible_os_family == "Debian"
+
+- name: Ensure Deno path is added to user shell profile
+  lineinfile:
+    path: "/home/{{ ansible_user_id }}/{{ item }}"
+    line: 'export PATH=/home/{{ ansible_user_id }}/.deno/bin:$PATH'
+    state: present
+    create: yes
+  loop:
+    - .bashrc
+    - .zshrc
+    - .profile
+  when: ansible_os_family == "Debian"

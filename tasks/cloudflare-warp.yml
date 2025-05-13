@@ -1,0 +1,39 @@
+- name: Install prerequisites
+  become: true
+  apt:
+    name:
+      - curl
+      - gnupg
+      - lsb-release
+      - ca-certificates
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Add Cloudflare GPG key
+  become: true
+  apt_key:
+    url: https://pkg.cloudflareclient.com/pubkey.gpg
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Add Cloudflare repository
+  become: true
+  apt_repository:
+    repo: "deb https://pkg.cloudflareclient.com/ {{ ansible_distribution_release | lower }} main"
+    state: present
+    filename: cloudflare-warp
+  when: ansible_os_family == "Debian"
+
+- name: Update apt cache after adding repo
+  become: true
+  apt:
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install Cloudflare WARP
+  become: true
+  apt:
+    name: cloudflare-warp
+    state: present
+  when: ansible_os_family == "Debian"

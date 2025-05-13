@@ -1,0 +1,59 @@
+- name: Install prerequisites for NVM
+  become: true
+  apt:
+    name:
+      - curl
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Download and install NVM
+  become: false
+  shell: |
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "/home/{{ ansible_user_id }}"
+  when: ansible_os_family == "Debian"
+
+- name: Add NVM to shell profiles
+  lineinfile:
+    path: "/home/{{ ansible_user_id }}/{{ item }}"
+    line: 'export NVM_DIR="$HOME/.nvm"; [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
+    state: present
+    create: yes
+  loop:
+    - .bashrc
+    - .zshrc
+    - .profile
+  when: ansible_os_family == "Debian"
+
+- name: Install the latest Node.js version using NVM
+  become: false
+  shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm install --lts
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "/home/{{ ansible_user_id }}"
+  when: ansible_os_family == "Debian"
+
+- name: Check installed Node version
+  become: false
+  shell: |
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    node -v
+  args:
+    executable: /bin/bash
+  register: node_version
+  changed_when: false
+  failed_when: false
+  when: ansible_os_family == "Debian"
+
+- debug:
+    msg: "Installed Node.js version: {{ node_version.stdout }}"
+  when: node_version.rc == 0

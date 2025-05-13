@@ -1,0 +1,60 @@
+- name: Install prerequisites
+  become: true
+  apt:
+    name:
+      - wget
+      - tar
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Download Go
+  get_url:
+    url: "https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+    mode: '0644'
+  when: ansible_os_family == "Debian"
+
+- name: Remove old Go installation (if any)
+  become: true
+  file:
+    path: /usr/local/go
+    state: absent
+  when: ansible_os_family == "Debian"
+
+- name: Extract Go tarball
+  become: true
+  unarchive:
+    src: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+    dest: /usr/local
+    remote_src: yes
+  when: ansible_os_family == "Debian"
+
+- name: Remove Go tarball after installation
+  file:
+    path: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+    state: absent
+  when: ansible_os_family == "Debian"
+
+- name: Ensure Go path is added to user shell profile
+  lineinfile:
+    path: "/home/{{ ansible_user_id }}/{{ item }}"
+    line: 'export PATH=$PATH:/usr/local/go/bin'
+    state: present
+    create: yes
+  loop:
+    - .bashrc
+    - .zshrc
+    - .profile
+  when: ansible_os_family == "Debian"
+
+- name: Check if Go is installed
+  command: /usr/local/go/bin/go version
+  register: go_version_check
+  changed_when: false
+  failed_when: false
+  when: ansible_os_family == "Debian"
+
+- debug:
+    msg: "Installed Go version: {{ go_version_check.stdout }}"
+  when: go_version_check.rc == 0

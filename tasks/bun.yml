@@ -1,0 +1,20 @@
+- name: install Prequisites
+  become: true
+  apt:
+    name:
+      - curl
+    state: present
+    update_cache: yes
+  when: ansible_os_family == "Debian"
+
+- name: Install Bun
+  shell: curl -fsSL https://bun.sh/install | bash
+  args:
+    executable: /bin/bash
+  when: ansible_os_family == "Debian"
+
+- name: Reload shell profile
+  shell: source ~/.bashrc
+  args:
+    executable: /bin/bash
+  when: ansible_os_family == "Debian"

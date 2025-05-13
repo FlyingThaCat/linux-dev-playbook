@@ -1,0 +1,7 @@
+- name: Make sure the Developer folder exists in the user's home directory
+  file:
+    path: "/home/{{ ansible_user_id }}/Developer"
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_id }}"
