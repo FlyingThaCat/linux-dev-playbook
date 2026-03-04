@@ -1,0 +1,31 @@
+- name: Install Prequisites
+  become: true
+  ansible.builtin.package:
+    name: [curl, unzip]
+    state: present
+
+- name: Download Bun installer
+  ansible.builtin.get_url:
+    url: "{{ bun_install_url }}"
+    dest: /tmp/bun_install.sh
+    mode: "0755"
+
+- name: Run Bun installer
+  ansible.builtin.command: /bin/bash /tmp/bun_install.sh
+  args:
+    creates: "{{ ansible_env.HOME }}/.bun/bin/bun"
+  become: false
+
+- name: Test Bun
+  ansible.builtin.command: "{{ ansible_env.HOME }}/.bun/bin/bun --version"
+  register: bun_version
+  changed_when: false
+
+- name: Display Bun version
+  ansible.builtin.debug:
+    msg: "Bun version: {{ bun_version.stdout }}"
+
+- name: Clean up
+  ansible.builtin.file:
+    path: /tmp/bun_install.sh
+    state: absent

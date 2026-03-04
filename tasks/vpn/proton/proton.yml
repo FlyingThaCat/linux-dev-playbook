@@ -1,0 +1,20 @@
+- name: Install Proton VPN on Debian
+  ansible.builtin.import_tasks: debian.yml
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install Proton VPN on RedHat
+  ansible.builtin.import_tasks: redhat.yml
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Install Proton VPN on Archlinux
+  ansible.builtin.import_tasks: arch.yml
+  when: ansible_facts.os_family == "Archlinux"
+
+- name: Check if Proton VPN is successfully installed
+  ansible.builtin.command: protonvpn-app -v
+  register: protonvpn_status
+  changed_when: false
+
+- name: Display Proton VPN version
+  ansible.builtin.debug:
+    msg: "Proton VPN version: {{ protonvpn_status.stdout }}"

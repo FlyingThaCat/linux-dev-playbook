@@ -1,0 +1,22 @@
+- name: Install Visual Studio Code (Debian)
+  ansible.builtin.include_tasks: debian.yml
+  when: ansible_os_family == "Debian"
+
+- name: Install Visual Studio Code (RedHat)
+  ansible.builtin.include_tasks: redhat.yml
+  when: ansible_os_family == "RedHat"
+
+- name: Install Visual Studio Code (Archlinux)
+  ansible.builtin.include_tasks: arch.yml
+  when: ansible_os_family == "Archlinux"
+
+- name: Check if Visual Studio Code is installed
+  ansible.builtin.command: code --version
+  changed_when: false
+  register: vscode_version
+  ignore_errors: true
+
+- name: Display Visual Studio Code version
+  ansible.builtin.debug:
+    var: vscode_version.stdout
+  when: vscode_version is defined

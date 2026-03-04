@@ -1,0 +1,36 @@
+---
+- name: Install Docker (Debian family)
+  ansible.builtin.import_tasks: debian.yml
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install Docker (RedHat family)
+  ansible.builtin.import_tasks: redhat.yml
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Install Docker (Arch)
+  ansible.builtin.import_tasks: arch.yml
+  when: ansible_facts.os_family == "Archlinux"
+
+# Add current user to docker group
+- name: Ensure docker group exists
+  become: true
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Add user to docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ ansible_user_id }}"
+    groups: docker
+    append: true
+
+# Verify docker installation
+- name: Check Docker version
+  ansible.builtin.command: docker --version
+  register: docker_version
+  changed_when: false
+
+- name: Show Docker version
+  ansible.builtin.debug:
+    msg: "{{ docker_version.stdout }}"

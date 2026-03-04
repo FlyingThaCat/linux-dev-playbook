@@ -1,0 +1,11 @@
+---
+- name: Test Deno installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+  vars:
+    deno_install_url: "https://deno.land/install.sh"
+
+  tasks:
+    - name: Include Deno tasks
+      ansible.builtin.include_tasks: ../../tasks/nodejs/deno.yml

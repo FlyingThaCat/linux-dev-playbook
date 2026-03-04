@@ -1,0 +1,45 @@
+# Install prerequisites
+- name: Install prerequisites
+  become: true
+  ansible.builtin.apt:
+    name:
+      - wget
+      - gpg
+    state: present
+    update_cache: true
+
+# Ensure keyrings directory exists
+- name: Ensure apt keyrings directory exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+# Download Adoptium GPG key
+- name: Download Adoptium GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: https://packages.adoptium.net/artifactory/api/gpg/key/public
+    dest: /etc/apt/keyrings/adoptium.asc
+    mode: '0644'
+
+# Add Adoptium repository
+- name: Add Adoptium repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: >
+      deb [signed-by=/etc/apt/keyrings/adoptium.asc]
+      https://packages.adoptium.net/artifactory/deb
+      {{ ansible_distribution_release }}
+      main
+    filename: adoptium
+    state: present
+
+# Install OpenJDK
+- name: Install Adoptium OpenJDK
+  become: true
+  ansible.builtin.apt:
+    name: "temurin-{{ java_major_version }}-jdk"
+    state: present
+    update_cache: true

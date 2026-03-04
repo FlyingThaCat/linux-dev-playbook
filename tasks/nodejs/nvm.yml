@@ -1,0 +1,56 @@
+- name: Install Prerequisites
+  become: true
+  ansible.builtin.package:
+    name:
+      - curl
+      - git
+    state: present
+
+- name: Get latest NVM release
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/nvm-sh/nvm/releases/latest
+    return_content: true
+  register: nvm_release
+
+- name: Set latest NVM tag
+  ansible.builtin.set_fact:
+    nvm_version: "{{ nvm_release.json.tag_name }}"
+
+- name: Ensure NVM directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/.nvm"
+    state: directory
+    mode: '0755'
+
+- name: Clone NVM repository
+  ansible.builtin.git:
+    repo: https://github.com/nvm-sh/nvm.git
+    dest: "{{ ansible_env.HOME }}/.nvm"
+    version: "{{ nvm_version }}"
+
+- name: Add NVM initialization to .bashrc
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.bashrc"
+    marker: "# {mark} ANSIBLE MANAGED NVM"
+    block: |
+      export NVM_DIR="$HOME/.nvm"
+      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+      [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+- name: Check NVM version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    nvm --version
+  args:
+    executable: /bin/bash
+  changed_when: false
+  register: nvm_check
+
+- name: Ensure NVM version is installed
+  ansible.builtin.assert:
+    that:
+      - nvm_check.stdout is defined
+      - nvm_check.stdout | length > 0
+    fail_msg: "NVM is not installed correctly"
+    success_msg: "NVM is installed correctly: {{ nvm_check.stdout }}"

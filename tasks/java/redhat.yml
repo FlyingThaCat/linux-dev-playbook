@@ -1,0 +1,19 @@
+# Install Temurin (Adoptium) on Fedora / RHEL
+
+- name: Add Adoptium repository
+  become: true
+  ansible.builtin.yum_repository:
+    name: adoptium
+    description: Adoptium
+    baseurl: "https://packages.adoptium.net/artifactory/rpm/{{ ansible_distribution | lower }}/$releasever/$basearch"
+    enabled: true
+    gpgcheck: true
+    gpgkey: https://packages.adoptium.net/artifactory/api/gpg/key/public
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Install Temurin JDK
+  become: true
+  ansible.builtin.dnf:
+    name: "temurin-{{ java_major_version }}-jdk"
+    state: present
+  when: ansible_facts.os_family == "RedHat"

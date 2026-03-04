@@ -1,0 +1,9 @@
+---
+- name: Test Visual Studio Code installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+
+  tasks:
+    - name: Include Visual Studio Code tasks
+      ansible.builtin.include_tasks: ../../tasks/ide/vscode/visual-studio-code.yml

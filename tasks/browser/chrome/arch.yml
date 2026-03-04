@@ -1,0 +1,5 @@
+- name: Install Google Chrome via yay
+  become: false
+  ansible.builtin.command: yay -S --noconfirm google-chrome
+  args:
+    creates: /usr/bin/google-chrome

@@ -1,0 +1,17 @@
+- name: Install Deno
+  ansible.builtin.import_tasks: deno.yml
+
+- name: Install Bun
+  ansible.builtin.import_tasks: bun.yml
+
+- name: Install NVM
+  ansible.builtin.import_tasks: nvm.yml
+
+- name: Install NodeJS
+  ansible.builtin.import_tasks: nodejs.yml
+
+- name: Install pnpm
+  ansible.builtin.import_tasks: pnpm.yml
+
+- name: Install Yarn
+  ansible.builtin.import_tasks: yarn.yml

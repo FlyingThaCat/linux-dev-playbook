@@ -1,0 +1,11 @@
+---
+- name: Test Proton VPN installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+  vars:
+    proton_repo_deb: protonvpn-stable-release_1.0.8_all.deb
+    proton_repo_rpm: protonvpn-stable-release-1.0.3-1.noarch.rpm
+  tasks:
+    - name: Include Proton VPN tasks
+      ansible.builtin.include_tasks: ../../tasks/vpn/proton/proton.yml

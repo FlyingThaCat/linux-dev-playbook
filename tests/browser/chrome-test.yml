@@ -1,0 +1,9 @@
+---
+- name: Test Google Chrome installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+
+  tasks:
+    - name: Include Google Chrome tasks
+      ansible.builtin.include_tasks: ../../tasks/browser/chrome/google-chrome.yml

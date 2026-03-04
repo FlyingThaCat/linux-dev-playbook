@@ -1,0 +1,9 @@
+---
+- name: Test antigravity installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+
+  tasks:
+    - name: Include antigravity tasks
+      ansible.builtin.include_tasks: ../../tasks/ide/antigravity/antigravity.yml

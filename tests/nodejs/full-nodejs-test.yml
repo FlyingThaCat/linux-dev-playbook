@@ -1,0 +1,12 @@
+---
+- name: Test Full NodeJS installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+  vars:
+    bun_install_url: "https://bun.com/install"
+    deno_install_url: "https://deno.land/install.sh"
+
+  tasks:
+    - name: Include Full NodeJS tasks
+      ansible.builtin.include_tasks: ../../tasks/nodejs/full-nodejs.yml

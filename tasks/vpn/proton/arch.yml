@@ -1,0 +1,7 @@
+- name: Install Proton VPN GUI (Arch)
+  become: true
+  community.general.pacman:
+    name: proton-vpn-gtk-app
+    state: present
+    update_cache: true
+  when: ansible_facts.os_family == "Archlinux"

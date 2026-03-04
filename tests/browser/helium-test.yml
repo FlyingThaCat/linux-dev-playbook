@@ -1,0 +1,9 @@
+---
+- name: Test Helium installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+
+  tasks:
+    - name: Include Helium tasks
+      ansible.builtin.include_tasks: ../../tasks/browser/helium/helium.yml

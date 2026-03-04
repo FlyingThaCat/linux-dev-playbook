@@ -1,0 +1,32 @@
+- name: Install Prequisites
+  become: true
+  ansible.builtin.package:
+    name:
+      - curl
+    state: present
+
+- name: Download Deno installer
+  ansible.builtin.get_url:
+    url: "{{ deno_install_url }}"
+    dest: /tmp/deno_install.sh
+    mode: '0755'
+
+- name: Run Deno installer
+  ansible.builtin.command: /bin/bash /tmp/deno_install.sh
+  args:
+    creates: "{{ ansible_env.HOME }}/.deno/bin/deno"
+  become: false
+
+- name: Test Deno
+  ansible.builtin.command: "{{ ansible_env.HOME }}/.deno/bin/deno --version"
+  register: deno_version
+  changed_when: false
+
+- name: Display Deno version
+  ansible.builtin.debug:
+    msg: "Deno version: {{ deno_version.stdout }}"
+
+- name: Clean up
+  ansible.builtin.file:
+    path: /tmp/deno_install.sh
+    state: absent

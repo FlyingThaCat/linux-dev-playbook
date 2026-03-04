@@ -1,0 +1,25 @@
+- name: Install WireGuard client
+  become: true
+  ansible.builtin.package:
+    name: wireguard-tools
+    state: present
+
+- name: Check if wg binary exists
+  ansible.builtin.stat:
+    path: /usr/bin/wg
+  register: wg_binary
+
+- name: Check if wg-quick binary exists
+  ansible.builtin.stat:
+    path: /usr/bin/wg-quick
+  register: wg_quick_binary
+
+- name: Fail if WireGuard is missing
+  ansible.builtin.fail:
+    msg: "WireGuard binary not found"
+  when: not wg_binary.stat.exists
+
+- name: Fail if WireGuard wg-quick is missing
+  ansible.builtin.fail:
+    msg: "WireGuard wg-quick binary not found"
+  when: not wg_quick_binary.stat.exists

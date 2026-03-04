@@ -1,0 +1,6 @@
+- name: Install cloudflare-warp via yay
+  become: false
+  ansible.builtin.command: yay -S --noconfirm cloudflare-warp-bin
+  args:
+    creates: /usr/bin/warp-cli
+  when: ansible_facts.os_family == "Archlinux"

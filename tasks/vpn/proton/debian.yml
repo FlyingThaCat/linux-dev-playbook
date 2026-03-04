@@ -1,0 +1,34 @@
+- name: Set Proton VPN repo package name
+  ansible.builtin.set_fact:
+    proton_repo_deb: protonvpn-stable-release_1.0.8_all.deb
+
+- name: Download Proton VPN repository package
+  become: true
+  ansible.builtin.get_url:
+    url: https://repo.protonvpn.com/debian/dists/stable/main/binary-all/{{ proton_repo_deb }}
+    dest: "/tmp/{{ proton_repo_deb }}"
+    mode: '0644'
+    checksum: "sha256:0b14e71586b22e498eb20926c48c7b434b751149b1f2af9902ef1cfe6b03e180"
+
+- name: Install Proton VPN repository package
+  become: true
+  ansible.builtin.apt:
+    deb: "/tmp/{{ proton_repo_deb }}"
+    state: present
+
+- name: Update apt cache
+  become: true
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Install Proton VPN GUI app
+  become: true
+  ansible.builtin.apt:
+    name: proton-vpn-gnome-desktop
+    state: present
+
+- name: Remove repository package file
+  become: true
+  ansible.builtin.file:
+    path: "/tmp/{{ proton_repo_deb }}"
+    state: absent

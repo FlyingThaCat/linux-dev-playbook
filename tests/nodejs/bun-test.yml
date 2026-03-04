@@ -1,0 +1,11 @@
+---
+- name: Test Bun installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+  vars:
+    bun_install_url: "https://bun.com/install"
+
+  tasks:
+    - name: Include Bun tasks
+      ansible.builtin.include_tasks: ../../tasks/nodejs/bun.yml

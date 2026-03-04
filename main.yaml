@@ -1,20 +1,39 @@
 ---
 - name: Configure host
   hosts: all
+  gather_facts: true
   connection: local
   vars:
-    go_version: "1.24.3"
+    bun_install_url: "https://bun.com/install"
+    deno_install_url: "https://deno.land/install.sh"
+    keyd_version: master
+    keyd_src_dir: /usr/local/src/keyd
+    keyd_binary_path: /usr/local/bin/keyd
+    proton_repo_deb: protonvpn-stable-release_1.0.8_all.deb
+    proton_repo_rpm: protonvpn-stable-release-1.0.3-1.noarch.rpm
+    java_major_version: 21
+
+    # yamllint disable rule:line-length
+    wallpaper_url: https://www.wsupercars.com/wallpapers-regular/Formula-1/McLaren/2024-Formula1-McLaren-MCL38-001-2000.jpg
 
   tasks:
-    - name: Update apt cache
-      become: true
-      apt:
-        update_cache: yes
-      when: ansible_os_family == "Debian"
-        
+    - name: Check if running on Linux
+      ansible.builtin.assert:
+        that:
+          - ansible_os_family == "Debian" or ansible_os_family == "RedHat" or ansible_os_family == "Archlinux"
+        fail_msg: "This playbook is intended for Linux-based systems only."
+        success_msg: "Running on Linux-based system."
+
+    - name: Check minimum kernel version (>= 5.1)
+      ansible.builtin.assert:
+        that:
+          - ansible_kernel is version('5.1', '>=')
+        fail_msg: "Kernel version must be >= 5.1"
+        success_msg: "Kernel version is >= 5.1"
+
     - name: Install basic tools
       become: true
-      package:
+      ansible.builtin.package:
         name:
           - sudo
           - git
@@ -24,33 +43,76 @@
           - mpv
           - vlc
         state: present
-    
-    - name: Install bun
-      include_tasks: tasks/bun.yml
 
-    - name: Install cloudflare-warp
-      include_tasks: tasks/cloudflare-warp.yml
-    
-    - name: Install deno
-      include_tasks: tasks/deno.yml
+    - name: Install wallpaper
+      ansible.builtin.include_tasks: tasks/etc/set-wallpaper.yml
 
-    - name: Make Developer Folder
-      include_tasks: tasks/developer-folder.yml
+    - name: Install Docker
+      ansible.builtin.include_tasks: tasks/docker/docker.yml
 
-    - name: Install Docker Engine
-      include_tasks: tasks/docker-engine.yml
+    - name: Install Java
+      ansible.builtin.include_tasks: tasks/java/java.yml
 
-    - name: Install Go
-      include_tasks: tasks/go.yml
+    - name: Install yay
+      ansible.builtin.include_tasks: tasks/etc/yay.yml
+      when: ansible_os_family == "Archlinux"
+
+    - name: Install appimagelauncher
+      ansible.builtin.include_tasks: tasks/etc/appimagelauncher.yml
+
+    - name: Setup Developers Folder
+      ansible.builtin.include_tasks: tasks/etc/developer-folder.yml
+
+    - name: Install DBeaver
+      ansible.builtin.include_tasks: tasks/dbeaver/dbeaver.yml
+
+    - name: Install keyd
+      ansible.builtin.include_tasks: tasks/etc/keyd.yml
+
+    - name: Install Full NodeJS Tools
+      ansible.builtin.include_tasks: tasks/nodejs/full-nodejs.yml
+
+    # - name: Install Docker Engine
+      # ansible.builtin.include_tasks: tasks/docker-engine.yml
+
+    - name: Install Golang
+      ansible.builtin.include_tasks: tasks/golang/go.yml
 
     - name: Install Google Chrome
-      include_tasks: tasks/google-chrome.yml
+      ansible.builtin.include_tasks: tasks/browser/chrome/google-chrome.yml
 
-    - name: Install NVM
-      include_tasks: tasks/nvm.yml
+    - name: Install Helium Browser
+      ansible.builtin.include_tasks: tasks/browser/helium/helium.yml
 
     - name: Install VSCode
-      include_tasks: tasks/vscode.yml
-    
-    - name: Install keyd
-      include_tasks: tasks/keyd.yml
+      ansible.builtin.include_tasks: tasks/ide/vscode/visual-studio-code.yml
+
+    - name: Install Antigravity
+      ansible.builtin.include_tasks: tasks/ide/antigravity/antigravity.yml
+
+    - name: Install ProtonVPN
+      ansible.builtin.include_tasks: tasks/vpn/proton/proton.yml
+
+    - name: Install Warp
+      ansible.builtin.include_tasks: tasks/vpn/warp/warp.yml
+
+    - name: Install Wireguard
+      ansible.builtin.include_tasks: tasks/vpn/wireguard/wireguard.yml
+
+    - name: Install Discord
+      ansible.builtin.include_tasks: tasks/discord/discord.yml
+
+    - name: Install Termius
+      ansible.builtin.include_tasks: tasks/termius/termius.yml
+
+    - name: Install Rustdesk
+      ansible.builtin.include_tasks: tasks/rustdesk/rustdesk.yml
+
+    - name: Install Anydesk
+      ansible.builtin.include_tasks: tasks/anydesk/anydesk.yml
+
+  handlers:
+    - name: Reload keyd
+      become: true
+      ansible.builtin.command: keyd reload
+      changed_when: true

@@ -1,0 +1,22 @@
+- name: Install antigravity (Debian)
+  ansible.builtin.include_tasks: debian.yml
+  when: ansible_os_family == "Debian"
+
+- name: Install antigravity (RedHat)
+  ansible.builtin.include_tasks: redhat.yml
+  when: ansible_os_family == "RedHat"
+
+- name: Install antigravity (Archlinux)
+  ansible.builtin.include_tasks: arch.yml
+  when: ansible_os_family == "Archlinux"
+
+- name: Check if antigravity is installed
+  ansible.builtin.command: antigravity --version
+  changed_when: false
+  register: antigravity_version
+  ignore_errors: true
+
+- name: Display antigravity version
+  ansible.builtin.debug:
+    var: antigravity_version.stdout
+  when: antigravity_version is defined

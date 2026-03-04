@@ -1,0 +1,6 @@
+- name: Install Visual Studio Code via yay
+  become: false
+  ansible.builtin.command: yay -S --noconfirm visual-studio-code-bin
+  args:
+    creates: /usr/bin/code
+  when: ansible_facts.os_family == "Archlinux"

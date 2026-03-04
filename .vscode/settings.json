@@ -1,0 +1,10 @@
+{
+    "ansible.python.interpreterPath": "/bin/python",
+    "files.associations": {
+        "*playbook*.yml": "ansible",
+        "site.yml": "ansible",
+        "hosts.yml": "ansible",
+        "roles/**/*.yml": "ansible",
+        "tasks/**/*.yml": "ansible"
+    }
+}

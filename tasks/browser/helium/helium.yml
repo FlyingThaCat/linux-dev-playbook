@@ -1,0 +1,43 @@
+- name: Get latest Helium release
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/imputnet/helium-linux/releases/latest
+    return_content: true
+  register: helium_release
+
+- name: Extract Helium AppImage asset
+  ansible.builtin.set_fact:
+    helium_asset: >-
+      {{
+        helium_release.json.assets
+        | selectattr('name', 'search', 'x86_64.AppImage')
+        | first
+      }}
+
+- name: Found Helium asset
+  ansible.builtin.debug:
+    var: helium_asset
+  when: helium_asset is defined
+
+- name: Found Helium SHA256
+  ansible.builtin.debug:
+    var: helium_asset.digest
+  when: helium_asset.digest is defined
+
+- name: Set Helium download URL
+  ansible.builtin.set_fact:
+    helium_url: >-
+      {{
+        helium_asset.browser_download_url
+      }}
+
+- name: Found Helium URL
+  ansible.builtin.debug:
+    var: helium_url
+  when: helium_url is defined
+
+- name: Download Helium AppImage
+  ansible.builtin.get_url:
+    url: "{{ helium_url }}"
+    dest: "{{ ansible_user_dir }}/Downloads/helium.AppImage"
+    mode: '0755'
+    checksum: "{{ helium_asset.digest }}"

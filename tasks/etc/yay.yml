@@ -1,0 +1,14 @@
+# noqa latest[git]
+- name: Clone yay
+  ansible.builtin.git:
+    repo: https://aur.archlinux.org/yay-bin.git
+    dest: "{{ srcdir }}/yay"
+    update: true
+  when: ansible_os_family == "Archlinux"
+
+- name: Build and install yay
+  ansible.builtin.command:
+    chdir: "{{ srcdir }}/yay"
+    cmd: "makepkg -sfi --noconfirm"
+    creates: /usr/bin/yay
+  when: ansible_os_family == "Archlinux"

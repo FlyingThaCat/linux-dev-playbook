@@ -1,0 +1,9 @@
+---
+- name: Test WireGuard installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+
+  tasks:
+    - name: Include WireGuard tasks
+      ansible.builtin.include_tasks: ../../tasks/vpn/wireguard/wireguard.yml

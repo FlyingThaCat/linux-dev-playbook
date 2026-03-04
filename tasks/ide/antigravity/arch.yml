@@ -1,0 +1,6 @@
+- name: Install antigravity via yay
+  become: false
+  ansible.builtin.command: yay -S --noconfirm antigravity
+  args:
+    creates: /usr/bin/antigravity
+  when: ansible_facts.os_family == "Archlinux"

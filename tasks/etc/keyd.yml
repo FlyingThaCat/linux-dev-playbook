@@ -1,0 +1,67 @@
+- name: Install build dependencies (Debian)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - build-essential
+      - git
+    state: present
+    update_cache: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install build dependencies (Fedora)
+  become: true
+  ansible.builtin.dnf:
+    name:
+      - gcc
+      - make
+      - git
+    state: present
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Install build dependencies (Arch)
+  become: true
+  community.general.pacman:
+    name:
+      - base-devel
+      - git
+    state: present
+    update_cache: true
+  when: ansible_facts.os_family == "Archlinux"
+
+- name: Clone keyd repository
+  become: true
+  ansible.builtin.git:
+    repo: https://github.com/rvaiya/keyd.git
+    dest: "{{ keyd_src_dir }}"
+    version: "{{ keyd_version }}"
+
+- name: Build keyd
+  become: true
+  ansible.builtin.command: make
+  args:
+    chdir: "{{ keyd_src_dir }}"
+    creates: "{{ keyd_src_dir }}/keyd"
+
+- name: Install keyd
+  become: true
+  ansible.builtin.command: make install
+  args:
+    chdir: "{{ keyd_src_dir }}"
+    creates: "{{ keyd_binary_path }}"
+
+- name: Install keyd configuration
+  become: true
+  ansible.builtin.copy:
+    src: config/keyd.conf
+    dest: /etc/keyd/default.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Reload keyd
+
+- name: Enable and start keyd service
+  become: true
+  ansible.builtin.systemd:
+    name: keyd
+    enabled: true
+    state: started

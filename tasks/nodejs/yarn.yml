@@ -1,0 +1,132 @@
+- name: Check Node version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    node --version
+  args:
+    executable: /bin/bash
+  register: node_check
+  changed_when: false
+
+- name: Fail if Node is not installed
+  ansible.builtin.fail:
+    msg: "Node must be installed before configuring yarn"
+  when: node_check.rc != 0
+
+- name: Enable Corepack
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    corepack enable
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Set yarn version variable
+  ansible.builtin.set_fact:
+    yarn_version: "stable"
+
+- name: Check yarn version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    yarn --version
+  args:
+    executable: /bin/bash
+  register: yarn_check
+  changed_when: false
+  failed_when: false
+
+- name: Activate yarn via Corepack
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    corepack use yarn@{{ yarn_version }}
+  args:
+    executable: /bin/bash
+  when: yarn_check.rc != 0
+  changed_when: true
+
+- name: Verify yarn version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    yarn --version
+  args:
+    executable: /bin/bash
+  register: yarn_verify
+  changed_when: false
+
+- name: Ensure yarn is installed correctly
+  ansible.builtin.assert:
+    that:
+      - yarn_verify.rc == 0
+      - yarn_verify.stdout is match('^[0-9]+\\.')
+    fail_msg: "yarn installation failed"
+    success_msg: "yarn installed successfully: {{ yarn_verify.stdout }}"
+- name: Check Node version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    node --version
+  args:
+    executable: /bin/bash
+  register: node_check
+  changed_when: false
+
+- name: Fail if Node is not installed
+  ansible.builtin.fail:
+    msg: "Node must be installed before configuring yarn"
+  when: node_check.rc != 0
+
+- name: Enable Corepack
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    corepack enable
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Set yarn version variable
+  ansible.builtin.set_fact:
+    yarn_version: "stable"
+
+- name: Check yarn version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    yarn --version
+  args:
+    executable: /bin/bash
+  register: yarn_check
+  changed_when: false
+  failed_when: false
+
+- name: Activate yarn via Corepack
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    corepack use yarn@{{ yarn_version }}
+  args:
+    executable: /bin/bash
+  when: yarn_check.rc != 0
+  changed_when: true
+
+- name: Verify yarn version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    yarn --version
+  args:
+    executable: /bin/bash
+  register: yarn_verify
+  changed_when: false
+
+- name: Ensure yarn is installed correctly
+  ansible.builtin.assert:
+    that:
+      - yarn_verify.rc == 0
+      - yarn_verify.stdout is match('^[0-9]+\\.')
+    fail_msg: "yarn installation failed"
+    success_msg: "yarn installed successfully: {{ yarn_verify.stdout }}"

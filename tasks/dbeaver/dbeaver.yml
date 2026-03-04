@@ -1,0 +1,32 @@
+# Install Flatpak
+- name: Install Flatpak
+  become: true
+  ansible.builtin.package:
+    name: flatpak
+    state: present
+
+# Add Flathub repository
+- name: Add Flathub repository
+  become: true
+  ansible.builtin.command:
+    cmd: flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+  changed_when: false
+
+# Install DBeaver
+- name: Install DBeaver via Flatpak
+  become: true
+  ansible.builtin.command:
+    cmd: flatpak install -y flathub io.dbeaver.DBeaverCommunity
+  register: dbeaver_install
+  changed_when: "'Installing' in dbeaver_install.stdout"
+
+# Verify installation
+- name: Check DBeaver installation
+  ansible.builtin.command:
+    cmd: flatpak info io.dbeaver.DBeaverCommunity
+  register: dbeaver_check
+  changed_when: false
+
+- name: Display DBeaver info
+  ansible.builtin.debug:
+    msg: "{{ dbeaver_check.stdout }}"

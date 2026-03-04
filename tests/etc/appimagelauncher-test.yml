@@ -1,0 +1,9 @@
+---
+- name: Test AppImageLauncher installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+
+  tasks:
+    - name: Include AppImageLauncher tasks
+      ansible.builtin.include_tasks: ../../tasks/etc/appimagelauncher.yml

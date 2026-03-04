@@ -1,0 +1,27 @@
+- name: Install Cloudflare WARP on Debian
+  ansible.builtin.import_tasks: debian.yml
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install Cloudflare WARP on RedHat
+  ansible.builtin.import_tasks: redhat.yml
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Install Cloudflare WARP on Archlinux
+  ansible.builtin.import_tasks: arch.yml
+  when: ansible_facts.os_family == "Archlinux"
+
+- name: Enable and start Cloudflare WARP
+  ansible.builtin.systemd:
+    name: warp-svc
+    enabled: true
+    state: started
+  become: true
+
+- name: Check if WARP is successfully installed
+  ansible.builtin.command: warp-cli -V
+  register: warp_status
+  changed_when: false
+
+- name: Display WARP version
+  ansible.builtin.debug:
+    msg: "WARP version: {{ warp_status.stdout }}"

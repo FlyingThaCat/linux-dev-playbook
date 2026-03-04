@@ -1,0 +1,34 @@
+- name: Ensure Proton VPN repo RPM is downloaded
+  become: true
+  ansible.builtin.get_url:
+    url: "https://repo.protonvpn.com/fedora-{{ ansible_distribution_major_version }}-stable/protonvpn-stable-release/{{ proton_repo_rpm }}"
+    dest: "/tmp/{{ proton_repo_rpm }}"
+    mode: '0644'
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Install Proton VPN repository package
+  become: true
+  ansible.builtin.dnf:
+    name: "/tmp/{{ proton_repo_rpm }}"
+    state: present
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Refresh dnf cache
+  become: true
+  ansible.builtin.dnf:
+    update_cache: true
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Install Proton VPN GUI app
+  become: true
+  ansible.builtin.dnf:
+    name: proton-vpn-gnome-desktop
+    state: present
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Remove repo RPM file
+  become: true
+  ansible.builtin.file:
+    path: "/tmp/{{ proton_repo_rpm }}"
+    state: absent
+  when: ansible_facts.os_family == "RedHat"

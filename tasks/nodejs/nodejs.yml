@@ -1,0 +1,33 @@
+- name: Check if Node default alias exists
+  ansible.builtin.stat:
+    path: "{{ ansible_env.HOME }}/.nvm/alias/default"
+  register: node_default_alias
+
+- name: Install latest Node LTS
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    nvm install --lts
+    nvm alias default 'lts/*'
+  args:
+    executable: /bin/bash
+  changed_when: true
+  when: not node_default_alias.stat.exists
+
+- name: Check Node version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    node --version
+  args:
+    executable: /bin/bash
+  register: node_check
+  changed_when: false
+
+- name: Ensure Node is installed
+  ansible.builtin.assert:
+    that:
+      - node_check.rc == 0
+      - node_check.stdout is match('^v[0-9]+\\.')
+    fail_msg: "Node is not installed correctly"
+    success_msg: "Node is installed correctly: {{ node_check.stdout }}"

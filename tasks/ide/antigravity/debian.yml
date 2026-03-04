@@ -1,0 +1,34 @@
+- name: Ensure apt keyrings directory exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  when: ansible_facts.os_family == "Debian"
+
+- name: Download Antigravity GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: https://us-central1-apt.pkg.dev/doc/repo-signing-key.gpg
+    dest: /etc/apt/keyrings/antigravity-repo-key.gpg
+    mode: '0644'
+  when: ansible_facts.os_family == "Debian"
+
+- name: Add Antigravity apt repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: >
+      deb [signed-by=/etc/apt/keyrings/antigravity-repo-key.gpg]
+      https://us-central1-apt.pkg.dev/projects/antigravity-auto-updater-dev/
+      antigravity-debian main
+    filename: antigravity
+    state: present
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install antigravity package (Debian)
+  become: true
+  ansible.builtin.apt:
+    name: antigravity
+    state: present
+    update_cache: true
+  when: ansible_facts.os_family == "Debian"

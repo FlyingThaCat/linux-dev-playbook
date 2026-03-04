@@ -1,0 +1,9 @@
+---
+- name: Test NodeJS installation
+  hosts: localhost
+  gather_facts: true
+  connection: local
+
+  tasks:
+    - name: Include NodeJS tasks
+      ansible.builtin.include_tasks: ../../tasks/nodejs/nodejs.yml

@@ -1,0 +1,70 @@
+- name: Get latest Go version metadata
+  ansible.builtin.uri:
+    url: https://go.dev/dl/?mode=json
+    return_content: true
+  register: go_release_data
+
+- name: Set latest Go version fact
+  ansible.builtin.set_fact:
+    go_version: "{{ (go_release_data.json | selectattr('stable', 'equalto', true) | list)[0].version | regex_replace('^go', '') }}"
+
+- name: Display latest Go version
+  ansible.builtin.debug:
+    msg: "Latest Go version: {{ go_version }}"
+
+- name: Install prerequisites
+  become: true
+  ansible.builtin.package:
+    name:
+      - tar
+    state: present
+
+- name: Check installed Go version (if any)
+  ansible.builtin.command: /usr/local/go/bin/go version
+  register: go_installed
+  changed_when: false
+  failed_when: false
+
+- name: Download Go
+  ansible.builtin.get_url:
+    url: "https://go.dev/dl/go{{ go_version }}.linux-amd64.tar.gz"
+    dest: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+    mode: "0644"
+  when: go_version not in go_installed.stdout
+
+- name: Remove old Go installation (if version mismatch)
+  become: true
+  ansible.builtin.file:
+    path: /usr/local/go
+    state: absent
+  when: go_version not in go_installed.stdout
+
+- name: Extract Go tarball
+  become: true
+  ansible.builtin.unarchive:
+    src: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+    dest: /usr/local
+    remote_src: true
+  when: go_version not in go_installed.stdout
+
+- name: Remove Go tarball
+  ansible.builtin.file:
+    path: "/tmp/go{{ go_version }}.linux-amd64.tar.gz"
+    state: absent
+  when: go_version not in go_installed.stdout
+
+- name: Check if Go is installed
+  ansible.builtin.command: /usr/local/go/bin/go version
+  register: go_version_check
+  changed_when: false
+  failed_when: false
+
+- name: Display Go version
+  ansible.builtin.debug:
+    msg: "Go version: {{ go_version_check.stdout }}"
+
+- name: Add Go to PATH
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    line: 'export PATH="/usr/local/go/bin:$PATH"'
+    state: present

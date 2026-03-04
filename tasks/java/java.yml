@@ -1,0 +1,31 @@
+- name: Install Java on Debian
+  ansible.builtin.import_tasks: debian.yml
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install Java on RedHat
+  ansible.builtin.import_tasks: redhat.yml
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Install Java on Archlinux
+  ansible.builtin.import_tasks: arch.yml
+  when: ansible_facts.os_family == "Archlinux"
+
+- name: Check Java version
+  ansible.builtin.command: java -version
+  register: java_check
+  changed_when: false
+  failed_when: false
+
+- name: Display Java version
+  ansible.builtin.debug:
+    msg: "{{ java_check.stderr }}"
+
+- name: Check Javac version
+  ansible.builtin.command: javac -version
+  register: javac_check
+  changed_when: false
+  failed_when: false
+
+- name: Display Javac version
+  ansible.builtin.debug:
+    msg: "{{ javac_check.stderr }}"

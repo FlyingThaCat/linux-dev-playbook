@@ -1,0 +1,76 @@
+- name: Check Node version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    node --version
+  args:
+    executable: /bin/bash
+  register: node_check
+  changed_when: false
+
+- name: Fail if Node is not installed
+  ansible.builtin.fail:
+    msg: "Node must be installed before configuring pnpm"
+  when: node_check.rc != 0
+
+- name: Update corepack to latest
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    npm install --global corepack@latest
+  args:
+    executable: /bin/bash
+  register: corepack_update
+  changed_when: "'added' in corepack_update.stdout or 'changed' in corepack_update.stdout"
+
+- name: Enable Corepack
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    corepack enable
+  args:
+    executable: /bin/bash
+  changed_when: false
+
+- name: Set pnpm version variable
+  ansible.builtin.set_fact:
+    pnpm_version: "latest-10"
+
+- name: Check pnpm version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    pnpm --version
+  args:
+    executable: /bin/bash
+  register: pnpm_check
+  changed_when: false
+  failed_when: false
+
+- name: Activate pnpm via Corepack
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    corepack use pnpm@{{ pnpm_version }}
+  args:
+    executable: /bin/bash
+  when: pnpm_check.rc != 0
+  changed_when: true
+
+- name: Verify pnpm version
+  ansible.builtin.shell: |
+    export NVM_DIR="$HOME/.nvm"
+    . "$NVM_DIR/nvm.sh"
+    pnpm --version
+  args:
+    executable: /bin/bash
+  register: pnpm_verify
+  changed_when: false
+
+- name: Ensure pnpm is installed correctly
+  ansible.builtin.assert:
+    that:
+      - pnpm_verify.rc == 0
+      - pnpm_verify.stdout is match('^[0-9]+\\.')
+    fail_msg: "pnpm installation failed"
+    success_msg: "pnpm installed successfully: {{ pnpm_verify.stdout }}"

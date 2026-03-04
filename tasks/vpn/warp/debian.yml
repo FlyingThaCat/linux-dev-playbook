@@ -1,0 +1,33 @@
+- name: Install prerequisites (Debian/Ubuntu)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - gnupg
+      - ca-certificates
+    state: present
+    update_cache: true
+
+- name: Download Cloudflare WARP GPG key
+  become: true
+  ansible.builtin.get_url:
+    url: https://pkg.cloudflareclient.com/pubkey.gpg
+    dest: /usr/share/keyrings/cloudflare-warp-archive-keyring.gpg
+    mode: '0644'
+
+- name: Add Cloudflare WARP repository
+  become: true
+  ansible.builtin.apt_repository:
+    repo: >
+      deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg]
+      https://pkg.cloudflareclient.com/
+      {{ ansible_distribution_release }}
+      main
+    filename: cloudflare-client
+    state: present
+
+- name: Install Cloudflare WARP
+  become: true
+  ansible.builtin.apt:
+    name: cloudflare-warp
+    state: present
+    update_cache: true

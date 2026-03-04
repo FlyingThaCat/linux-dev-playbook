@@ -1,0 +1,83 @@
+- name: Install AppImageLauncher (Arch AUR)
+  ansible.builtin.command: yay -S --noconfirm appimagelauncher-bin
+  args:
+    creates: /usr/bin/appimagelauncher
+  when: ansible_facts.os_family == "Archlinux"
+
+- name: Get latest AppImageLauncher release
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/TheAssassin/AppImageLauncher/releases/latest
+    return_content: true
+  register: appimagelauncher_release
+
+# ---------------------------
+# Fedora / RHEL (RPM)
+# ---------------------------
+- name: Set RPM download URL
+  ansible.builtin.set_fact:
+    appimagelauncher_rpm_url: >-
+      {{
+        appimagelauncher_release.json.assets
+        | selectattr('name', 'search', 'x86_64.rpm')
+        | map(attribute='browser_download_url')
+        | first
+      }}
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Found AppImageLauncher RPM URL
+  ansible.builtin.debug:
+    var: appimagelauncher_rpm_url
+  when: ansible_facts.os_family == "RedHat"
+
+- name: Install AppImageLauncher (RPM)
+  become: true
+  ansible.builtin.dnf:
+    name: "{{ appimagelauncher_rpm_url }}"
+    state: present
+  when: ansible_facts.os_family == "RedHat"
+
+# ---------------------------
+# Debian / Ubuntu (DEB)
+# ---------------------------
+- name: Set DEB download URL
+  ansible.builtin.set_fact:
+    appimagelauncher_deb_url: >-
+      {{
+        appimagelauncher_release.json.assets
+        | selectattr('name', 'search', 'amd64.deb')
+        | map(attribute='browser_download_url')
+        | first
+      }}
+  when: ansible_facts.os_family == "Debian"
+
+- name: Found AppImageLauncher DEB URL
+  ansible.builtin.debug:
+    var: appimagelauncher_deb_url
+  when: ansible_facts.os_family == "Debian"
+
+- name: Download AppImageLauncher .deb
+  become: true
+  ansible.builtin.get_url:
+    url: "{{ appimagelauncher_deb_url }}"
+    dest: /tmp/appimagelauncher.deb
+    mode: '0644'
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install AppImageLauncher (DEB)
+  become: true
+  ansible.builtin.apt:
+    deb: /tmp/appimagelauncher.deb
+    state: present
+  when: ansible_facts.os_family == "Debian"
+
+- name: Remove temporary .deb
+  become: true
+  ansible.builtin.file:
+    path: /tmp/appimagelauncher.deb
+    state: absent
+  when: ansible_facts.os_family == "Debian"
+
+- name: Check if AppImageLauncher is successfully installed
+  ansible.builtin.stat:
+    path: /usr/bin/appimagelauncher
+  register: appimagelauncher_check
