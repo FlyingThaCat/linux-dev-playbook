@@ -111,6 +111,9 @@
     - name: Install Anydesk
       ansible.builtin.include_tasks: tasks/anydesk/anydesk.yml
 
+    - name: Install Localsend
+      ansible.builtin.include_tasks: tasks/etc/localsend.yml
+
   handlers:
     - name: Reload keyd
       become: true
